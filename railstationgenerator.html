@@ -3,50 +3,22 @@
 <html>
 	<head>
 		<title>RailStation Generator | Vallamir & Co</title>
-		<meta name="description" content="Générateur procédural de gares - Site personnel d'Alfred Vallamir / Valentin Lamirault." />
-		<meta name="keywords" content="procedural, generation, rail, station, generator, site, python, sig, cartographie, programmation, vallamir" />
-		<meta name="Language" CONTENT="fr" />
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="../css/bootstrap.css" />
-		<link rel="stylesheet" href="../js/highlight/styles/default.css" />
-		<link rel="stylesheet" href="../js/highlight/styles/monokai.css" />
-		<link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-touch-icon.png">
-		<link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-chrome-192x192.png">
-		<link rel="icon" type="image/png" sizes="512x512" href="../images/favicon/android-chrome-512x512.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
-		<link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
-		<link rel="manifest" href="../images/favicon/manifest.json">
-		<meta name="theme-color" content="#ffffff">
-		<script src="https://kit.fontawesome.com/299a3d44e4.js" crossorigin="anonymous"></script>
-		<script type="text/javascript"  src="../menu.js"></script>
-		<script type="text/javascript" src="../js/getFooter.js"></script>
-		<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5311521954024285"
-     crossorigin="anonymous"></script>
 	</head>
 
 	<body>
-		<!-- Navigation  -->
-		 <script>getMenu("Outils","RailStation Generator","False");</script>
+		
 	
-		<div class="bg-dark" >					 
-			<div class="row text-light">		
-		      	<div class="col col-md-3 py-3 px-5">
-		      		<p class=""><button class="btn btn-outline-secondary p-1 m-1 text-light loc1" onclick="changeLocal('1')">FR</button><button class="btn btn-outline-secondary p-1 m-1 text-light loc2" onclick="changeLocal('2')">EN</button></p>
-		      		<h2 class="py-1">Rail Station Generator</h2>
-					<p class="text-center"><span id="text-2"></span><input class="" id="seed" size="15" type="text" value="" /></p>			
-					<p class="text-center"><button class="btn btn-secondary px-3 py-2 my-1 text-light" onclick="newSeed()"><span id="button-1"></span></button></p>		
-					<p class="my-2"><span id="text-3"></span> <span id="nbGen"></span></p>
-					<br><br>
-					<p class="text-center"><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Licence Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a></p>
-				</div>
-				<div class="col col-md-9">
-					<canvas class="p-0 m-0" id="skylineGenerator" width="750" height="750" ></canvas>
-				</div>
-			</div>
-
+		<div>					 
+			<p><button onclick="changeLocal('1')">FR</button><button onclick="changeLocal('2')">EN</button></p>
+		      	<h2>Rail Station Generator</h2>
+			<p><span id="text-2"></span><input class="" id="seed" size="15" type="text" value="" /></p>			
+			<p><button onclick="newSeed()"><span id="button-1"></span></button></p>		
+			<p><span id="text-3"></span> <span id="nbGen"></span></p>
 		</div>
+		<div>
+			<canvas class="p-0 m-0" id="skylineGenerator" width="750" height="750" ></canvas>
+		</div>
+
 		<!-- Script -->
 
 		<script>
@@ -463,38 +435,6 @@
 			
 		</script> 
 
-		<div class="container-fluid">
-      		<div class="row justify-content-center">
-		      	<div class="col col-md-9 py-3 px-5">
-		      		<div class="row pb-2">
-		      			<div class="col-3"><img src="../portfolio/icon_proj/RailStationGenerator.png" class="rounded w-100"></div>
-		      			<div class="col-9">
-		      					<h3 class="py-1">Usage</h3>
-		      					<p>Cette œuvre est mise à disposition selon les termes de la <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Licence Creative Commons Attribution - Pas d’Utilisation Commerciale 4.0 International</a>.<br>Pour toute utilisation commerciale, merci de me contacter : contact@vallamir-co.fr</p>
-		      			</div>
-		      		</div>
-		      		
-		      		
-
-		      		<h3 class="py-1">Documentation</h3>
-		      		<p>À venir</p>
-
-					<h3 class="py-1">Mises à jour</h3>
-					<a data-toggle="collapse" href="#v0_3" role="button" aria-expanded="false" aria-controls="v0_3"><b><span class="badge badge-secondary mr-3">1.0</span>30-01-2022</b></a>
-					<div class="collapse show" id="v0_3">
-						<ul>
-							<li>Création du jeu</li>
-						</ul>
-					</div>		
-					
-				</div>
-			</div>
-		</div>
-
-		<!-- Pied de page -->
-		<script>getFooter("False");</script>
-
-		
 		<!-- Scripts --> 
 
 		<script src="../js/jquery.min.js"></script>
