@@ -1,0 +1,509 @@
+<!DOCTYPE HTML>
+
+<html>
+	<head>
+		<title>RailStation Generator | Vallamir & Co</title>
+		<meta name="description" content="Générateur procédural de gares - Site personnel d'Alfred Vallamir / Valentin Lamirault." />
+		<meta name="keywords" content="procedural, generation, rail, station, generator, site, python, sig, cartographie, programmation, vallamir" />
+		<meta name="Language" CONTENT="fr" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../css/bootstrap.css" />
+		<link rel="stylesheet" href="../js/highlight/styles/default.css" />
+		<link rel="stylesheet" href="../js/highlight/styles/monokai.css" />
+		<link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/android-chrome-192x192.png">
+		<link rel="icon" type="image/png" sizes="512x512" href="../images/favicon/android-chrome-512x512.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png">
+		<link rel="manifest" href="../images/favicon/manifest.json">
+		<meta name="theme-color" content="#ffffff">
+		<script src="https://kit.fontawesome.com/299a3d44e4.js" crossorigin="anonymous"></script>
+		<script type="text/javascript"  src="../menu.js"></script>
+		<script type="text/javascript" src="../js/getFooter.js"></script>
+		<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5311521954024285"
+     crossorigin="anonymous"></script>
+	</head>
+
+	<body>
+		<!-- Navigation  -->
+		 <script>getMenu("Outils","RailStation Generator","False");</script>
+	
+		<div class="bg-dark" >					 
+			<div class="row text-light">		
+		      	<div class="col col-md-3 py-3 px-5">
+		      		<p class=""><button class="btn btn-outline-secondary p-1 m-1 text-light loc1" onclick="changeLocal('1')">FR</button><button class="btn btn-outline-secondary p-1 m-1 text-light loc2" onclick="changeLocal('2')">EN</button></p>
+		      		<h2 class="py-1">Rail Station Generator</h2>
+					<p class="text-center"><span id="text-2"></span><input class="" id="seed" size="15" type="text" value="" /></p>			
+					<p class="text-center"><button class="btn btn-secondary px-3 py-2 my-1 text-light" onclick="newSeed()"><span id="button-1"></span></button></p>		
+					<p class="my-2"><span id="text-3"></span> <span id="nbGen"></span></p>
+					<br><br>
+					<p class="text-center"><a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Licence Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a></p>
+				</div>
+				<div class="col col-md-9">
+					<canvas class="p-0 m-0" id="skylineGenerator" width="750" height="750" ></canvas>
+				</div>
+			</div>
+
+		</div>
+		<!-- Script -->
+
+		<script>
+			var seedBox=document.getElementById("seed");
+			var seed=parseInt("204199524032021");
+			var comptage =0;
+
+			onload=function(){
+				newSeed();
+				postNbGen();
+				locPost();
+			}
+			//Loop pour visualisation
+			//var mainloop = function() {newSeed()}; 
+    		//setInterval(mainloop, 1000);
+
+			//Initialisation de la largeur du canvas
+			var c = document.getElementById("skylineGenerator");
+			var w = 750; //Largeur du canvas
+			var h = 750; //Hauteur du canvas 
+
+			seedBox.oninput=function(){
+				if (seedBox.value.length >10){
+					seedBox.value=seedBox.value.substr(0,15);
+				}
+				seed=parseInt(seedBox.value);
+				drawRailsFromSeed();
+			}
+			//Selection de la langue
+			function locPost(){
+				//id, FR, EN
+				local=[
+					["text-2","Graine : ","Seed : "],
+					["button-1","Générer une gare", "Generate a station"],
+					["text-3","Nombre de gares générées :","Number of stations generated :"]
+				];
+				nom = window.location.href;
+    			nom = nom.split("?");
+    			if (nom.length==1){
+    				lang=1
+    			}
+				else if (nom[1]>=local[0].length){
+					lang=1
+				}
+				else{
+					lang=parseInt(nom[1]);
+				}
+				for (i=0; i<local.length; i++){
+					document.getElementById(local[i][0]).innerHTML = local[i][lang];
+				}
+				var element=document.getElementsByClassName("loc"+lang.toString());
+				element[0].className += " btn-secondary";
+
+			}
+
+			function changeLocal(local){
+				nom = window.location.href;
+    			nom = nom.split("?");
+    			var newname = nom[0]+"?"+local;
+    			window.location.assign(newname);
+			}
+
+			function newSeed(){
+				comptage+=1;
+				seed="";
+				for (i=0;i<15; i++){
+					num=Math.floor((Math.random() * 10));
+					seed+=num.toString();
+				}
+				var s = document.getElementById("seed");
+				s.value = seed;
+				drawRailsFromSeed();
+				addNbGen();
+			}
+
+			function drawRailsFromSeed(){
+				//Nettoyage du graphe
+				var c = document.getElementById("skylineGenerator");
+				var ctx = c.getContext("2d");
+				ctx.beginPath();
+				ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
+				
+				// ================ Fond ================
+				drawRectangle(ctx,-375,-375,1125,1125,'#FFF3E2');
+
+				//Variables de dessin
+				var seedlen = seed.toString().length; //Récupération de la longueur du seed
+				var wayspaces = 7; // Espace entre les voies centrales
+				var pM = 3; // multiplicateur pour la largeur des quais
+				var dVQ = 3; //distance entre les voies et les quais
+
+				// ================ Dessin ================
+				// ==== Etape 1 - Rotation en fonction du seed		
+				var rayon = Math.sqrt(2*Math.pow(h/2,2));
+				var angle = Math.floor((seed % 73728) / 1024)*5;
+				ctx.save(); //Sauvegarde de la position initiale
+				ctx.translate(375+Math.cos((135-angle)* Math.PI / 180)*rayon,375-Math.sin((135-angle)* Math.PI / 180)*rayon); //Translation du coin supérieur gauche
+				ctx.rotate(angle * Math.PI / 180); //Rotation du canvas
+								
+				// ==== Etape 2 - Dessins des voies ferrées
+				// == Dessin des voies centrales
+				var nb_middleway = Math.floor((seed % 17694720) / 1179648)+2; //Nombre de voies à quais
+				var middlePoint = []; // Stockage des coordonnées des extrémités des voies
+				var pos = w/2-(nb_middleway/4)*(1+pM)*wayspaces; //Incrémentation du pointeur de dessin
+				for (i=0; i<nb_middleway; i++){
+					// = Dessin des voies et des quais
+					drawLine(ctx, pos, h/3 , pos, 2*h/3 , "#000000");  //Dessin des voies 
+					if (i%2 == 1){
+						drawPlatform(ctx, pos, h/3, 2*h/3, wayspaces, pM, dVQ); //Dessin des quais
+					}				
+					// = Gestion des voies en impasse
+					// -1 sur les coordonnées y signifie que la voie est en impasse
+					pimp = (Math.floor(seed/Math.pow(10,i%seedlen)))%10; 
+					if (pimp == 0){
+						middlePoint.push([pos,-1,2*h/3]);
+					}
+					else if (pimp == 1){
+						middlePoint.push([pos,h/3,-1]);
+					}
+					else {
+						middlePoint.push([pos,h/3,2*h/3]);
+					}
+
+					// = Incrémentation du pointeur
+					if (i%2 == 0){
+						pos += wayspaces;
+					}
+					else {
+						pos += wayspaces * pM;
+					}					
+				}
+
+				// = Dessin des quais extrêmes
+				drawPlatform(ctx, middlePoint[0][0]-wayspaces*pM, h/3, 2*h/3, wayspaces, pM, dVQ);
+				if (nb_middleway%2 == 0){
+					drawPlatform(ctx, middlePoint[middlePoint.length-1][0], h/3, 2*h/3, wayspaces, pM, dVQ);
+				}
+
+				// ==== Etape 3 - Dessins des voies nord et sud
+				// == Comptage du nombre de voies en impasses
+				var countIn = 0; //Nombre de voies en impasse au nord
+				var countOut = 0; //Nombre de voies en impass au sud
+				for (i=0; i<middlePoint.length; i++){
+					countIn += middlePoint[i][1];
+					countOut += middlePoint[i][2];
+				}
+
+				//== Dessin des voies nord
+				var inway = Math.floor((seed % 294912) / 73728)+1; //Nombre de voies au nord
+				var inPoint = []; //Stockage des coordonnées des points extrêmes
+				if (countIn!=-middlePoint.length){
+					for (i=0; i<inway; i++){
+						drawLine(ctx, w/2-(wayspaces)*(inway/2-i), -h , w/2-(wayspaces)*(inway/2-i) , 1*h/6 , "#000000");
+						inPoint.push([w/2-(wayspaces)*(inway/2-i),1*h/6]);
+					}
+				}
+				
+				//== Dessin des voies sud
+				var outway = Math.floor((seed % 1179648) / 294912)+1; //Nombre de voies sud
+				var outPoint = [];
+				if (countOut!=-middlePoint.length){
+					for (i=0; i<outway; i++){
+						drawLine(ctx, w/2-(wayspaces)*(outway/2-i), 5*h/6 , w/2-(wayspaces)*(outway/2-i) , 2*h , "#000000");
+						outPoint.push([w/2-(wayspaces)*(outway/2-i),5*h/6]);
+					}
+				}
+
+				// ==== Etape 4 - Dessin des liaisons
+				for (i=0; i<middlePoint.length; i++){
+					var gap = Math.abs((i-middlePoint.length/2)*15)
+					// == Lien vers les voies nord
+					if (middlePoint[i][1] != -1){
+						drawLinks(ctx,middlePoint[i][0],middlePoint[i][1],inPoint,-gap);
+					}
+					// == Lien vers les voies sud
+					if (middlePoint[i][2] != -1){
+						drawLinks(ctx,middlePoint[i][0],middlePoint[i][2],outPoint,gap);
+					}
+				}
+				// == Gestion des cas où le nombre de voies nord et sud est supérieur au nombre de voies à quai. 
+				if (inway>nb_middleway){ //Nord
+					for (i=nb_middleway; i<inway; i++){
+						j=middlePoint.length-1;
+						linksSuccess = 0;
+						while ( linksSuccess == 0 && j>=0){
+							if (middlePoint[j][1] !=-1){
+								drawBezierCurve(ctx, middlePoint[j][0], h/3, inPoint[i][0], inPoint[i][1], "#000000");
+								linksSuccess = 1;
+							}
+							else {
+								j--;
+							}
+						}	
+					}
+				}
+				if (outway>nb_middleway){ //Sud
+					for (i=nb_middleway; i<outway; i++){
+						j=middlePoint.length-1;
+						linksSuccess = 0;
+						while ( linksSuccess == 0 && j>=0){
+							if (middlePoint[j][2] !=-1){
+								drawBezierCurve(ctx, middlePoint[j][0], 2*h/3, outPoint[i][0], outPoint[i][1], "#000000");
+								linksSuccess = 1;
+							}
+							else {
+								j--;
+							}
+						}	
+					}
+				}
+				//519991853371118
+				//Etape 5 - Dessin de la gare
+				// Rotation si toutes les voies sont en impasse au nord
+				if (countIn == -middlePoint.length){
+					ctx.translate(0,750);
+					ctx.rotate(3*Math.PI/2);
+					drawStation(ctx, wayspaces, seed, 2*h/3-3, h/3,dVQ,pM);
+				}
+				// Rotation si toutes les voies sont en impasse au sud
+				else if (countOut == -middlePoint.length){
+					ctx.translate(750,0);
+					ctx.rotate(Math.PI/2);
+					drawStation(ctx, wayspaces, seed, 2*h/3-3, h/3,dVQ,pM);
+				}
+				else {
+					drawStation(ctx, wayspaces, seed, middlePoint[middlePoint.length-1][0], middlePoint[0][0],dVQ,pM);
+				}
+				ctx.restore();
+				ctx.font = "15 px Arial";
+				ctx.fillStyle = "#000000"; 
+				ctx.strokeStyle = "#ffffff";
+				ctx.fillText(comptage.toString()+" | Seed :"+seed.toString(), 5, h-5);
+				ctx.StrokeText(comptage.toString()+" | Seed :"+seed.toString(), 5, h-5);
+			}
+
+			// ========= Dessin des liens entre les voies centrales et les voies entrantes/sortantes
+			function drawLinks(ctx,xi,yi,dots,gap){
+				var dist = [1000000,1000000];
+				var index = [-1,-1];
+				for (j=0; j<dots.length; j++){
+					var xj = dots[j][0];
+					if  (Math.abs(xi-xj)<dist[0]){
+						dist[0] = Math.abs(xi-xj);
+						index[0] = j;
+					}
+				}
+				drawBezierCurve(ctx, xi, yi, dots[index[0]][0], dots[index[0]][1]+gap, "#000000");
+
+				if (dots.length > 1){
+					for (j=0; j<dots.length; j++){
+						var xj = dots[j][0];
+						if  (Math.abs(xi-xj)<dist[1] && j!= index[0]){
+							dist[1] = Math.abs(xi-xj);
+							index[1] = j;
+						}
+					}
+					drawBezierCurve(ctx, xi, yi, dots[index[1]][0], dots[index[1]][1]+gap, "#000000");
+				}
+
+			}
+
+			// ============= Dessin des quais
+			function drawPlatform(ctx, x, y1, y2, wayspaces, pM, dVQ){
+				drawRectangle(ctx, x+dVQ, y1, wayspaces*pM-2*dVQ, y2-y1, "#AAAAAA");
+			}
+
+
+			// ============= Dessin de la gare
+			function drawStation(ctx, wayspaces,seed, initX, endX,dVQ,pM){
+				// Bâtiment principale (base)
+				drawRectangle(ctx, initX+dVQ, h/3, wayspaces*6, h/3, "#333333");
+				// Extension 0
+				if (seed%2<1){
+					drawRectangle(ctx, initX+dVQ, 21*h/48, wayspaces*9, h/8, "#333333");
+				}
+				// Extension 1
+				if (seed%4<2){
+					drawRectangle(ctx, initX+dVQ, h/3, wayspaces*9, -wayspaces*9 ,"#333333");
+				}
+				// Extension 2
+				if (seed%8<4){
+					drawRectangle(ctx, initX+dVQ, 2*h/3, wayspaces*9, wayspaces*9,"#333333");
+				}
+				// Extension 3
+				if (seed%16<8){
+					drawRectangle(ctx, initX+(dVQ + wayspaces*9), h/3 , -wayspaces*3, -wayspaces*20 ,"#333333");
+				}
+				// Extension 4
+				if (seed%32<16){
+					drawRectangle(ctx, initX+(dVQ + wayspaces*9), 2*h/3, -wayspaces*3, wayspaces*20 ,"#333333");
+				}
+				// Extension 5 - Bâtiment pont.
+				if (seed%64<32){
+					var bridge_y = (-h/6*Math.pow((((seed%1769472000)/ 17694720-50)/50),3))+(h/2);
+					var bridge_w = -Math.pow((((seed%176947200000)/ 1769472000-100)/100),3)*(h/6)+wayspaces*3;
+					drawRectangle(ctx, initX+3, Math.max(h/3,(bridge_y-bridge_w/2)), -(Math.abs(initX-endX)+dVQ+pM*wayspaces) , 
+						Math.min(bridge_w,2*h/3-(bridge_y-bridge_w/2))-Math.max(0,h/3-(bridge_y-bridge_w/2)) ,"#333333");
+				}
+				// Extension 6
+				if (seed%128<64){
+					drawRectangle(ctx, initX+(dVQ + wayspaces*6), h/3-wayspaces*4.5, wayspaces*7, -wayspaces*7,"#333333");
+				}
+				// Extension 7
+				if (seed%256<128){
+					drawRectangle(ctx, initX+(dVQ + wayspaces*6), 2*h/3+wayspaces*4.5, wayspaces*7, wayspaces*7,"#333333");
+				}
+				// Extension 8
+				if (seed%512<256){
+					drawRectangle(ctx, initX+(dVQ+ wayspaces*6), 21*h/48, wayspaces*5, -wayspaces*5,"#333333");
+				}
+				// Extension 9
+				if (seed%1024<512){
+					drawRectangle(ctx, initX+(dVQ+ wayspaces*6), 27*h/48, wayspaces*5, wayspaces*5,"#333333");				
+			}}
+
+			//============== Fonction de dessin de formes de base
+			function drawLine(ctx, initX, initY, endX, endY, color){
+				ctx.strokeStyle = color;
+				ctx.moveTo(initX, initY)
+				ctx.lineTo(endX,endY)
+				ctx.stroke()
+			}
+
+
+			//RECTANGLE
+			function drawRectangle(ctx,initX,initY,width,height,color){
+				ctx.fillStyle = color; 
+				ctx.strokeStyle = color;
+				ctx.fillRect(initX, initY, width, height);
+				ctx.stroke();
+			}
+
+
+			//BEZIER
+			function drawBezierCurve(ctx, initX, initY, endX, endY, color){
+				ctx.fillStyle = color; 
+				ctx.moveTo(initX, initY);
+				ctx.bezierCurveTo(initX, (initY+endY)/2, endX, (initY+endY)/2, endX, endY);
+				ctx.stroke();
+			}
+
+			function drawCurve(ctx, initX, initY, endX, endY, color){
+				ctx.fillStyle = color; 
+				ctx.moveTo(initX, initY);
+				ctx.bezierCurveTo(initX, endY, endX, initY, endX, endY);
+				ctx.stroke();
+			}
+
+			//POLYGONE
+			function drawPolygone(ctx,x,y,color){
+				ctx.fillStyle = color; 
+				ctx.strokeStyle = color;
+				ctx.beginPath();
+				ctx.moveTo(x[0],y[0]);
+				for (i=1; i<x.length; i++){
+					ctx.lineTo(x[i],y[i]);
+				}
+				ctx.closePath();
+				ctx.fill();
+				ctx.stroke();
+			}
+
+			// Fonction pour ajouter une class
+			function w3AddClass(element, name) {
+			  var i, arr1, arr2;
+			  arr1 = element.className.split(" ");
+			  arr2 = name.split(" ");
+			  for (i = 0; i < arr2.length; i++) {
+			    if (arr1.indexOf(arr2[i]) == -1) {
+			      element.className += " " + arr2[i];
+			    }
+			  }
+			}
+
+			// Fonction pour retirer une class
+			function w3RemoveClass(element, name) {
+			  var i, arr1, arr2;
+			  arr1 = element.className.split(" ");
+			  arr2 = name.split(" ");
+			  for (i = 0; i < arr2.length; i++) {
+			    while (arr1.indexOf(arr2[i]) > -1) {
+			      arr1.splice(arr1.indexOf(arr2[i]), 1);
+			    }
+			  }
+			  element.className = arr1.join(" ");
+			}
+
+			//Incrémentation du nombre de skylines créées
+			function addNbGen(){
+				$.ajax({
+			       type : "POST",
+			       url : "../php/incrementation.php",
+			       data : {
+			           fileurl : "railgenCount.txt"
+			        }
+			    });
+			    postNbGen();
+			}
+
+			function postNbGen(){
+				$.ajax({
+				    type : "GET",
+				    url : "../php/fileRead.php",
+				    data : {
+				    	fileurl : 'railgenCount.txt'
+				    },
+				    success : function(content){
+				    	document.getElementById("nbGen").innerHTML = content;
+				    }
+				});	
+			}
+
+			
+			
+		</script> 
+
+		<div class="container-fluid">
+      		<div class="row justify-content-center">
+		      	<div class="col col-md-9 py-3 px-5">
+		      		<div class="row pb-2">
+		      			<div class="col-3"><img src="../portfolio/icon_proj/RailStationGenerator.png" class="rounded w-100"></div>
+		      			<div class="col-9">
+		      					<h3 class="py-1">Usage</h3>
+		      					<p>Cette œuvre est mise à disposition selon les termes de la <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Licence Creative Commons Attribution - Pas d’Utilisation Commerciale 4.0 International</a>.<br>Pour toute utilisation commerciale, merci de me contacter : contact@vallamir-co.fr</p>
+		      			</div>
+		      		</div>
+		      		
+		      		
+
+		      		<h3 class="py-1">Documentation</h3>
+		      		<p>À venir</p>
+
+					<h3 class="py-1">Mises à jour</h3>
+					<a data-toggle="collapse" href="#v0_3" role="button" aria-expanded="false" aria-controls="v0_3"><b><span class="badge badge-secondary mr-3">1.0</span>30-01-2022</b></a>
+					<div class="collapse show" id="v0_3">
+						<ul>
+							<li>Création du jeu</li>
+						</ul>
+					</div>		
+					
+				</div>
+			</div>
+		</div>
+
+		<!-- Pied de page -->
+		<script>getFooter("False");</script>
+
+		
+		<!-- Scripts --> 
+
+		<script src="../js/jquery.min.js"></script>
+		<script src="../js/jquery.dropotron.min.js"></script>
+		<script src="../js/browser.min.js"></script>
+		<script src="../js/breakpoints.min.js"></script>
+		<script src="../js/util.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+		<script src="../js/bootstrap.min.js"></script>
+
+	</body>
+</html>
